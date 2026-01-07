@@ -1,0 +1,47 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+h1 { margin: 0 0 4px; font-size: 20px; }
+h2 { margin: 0 0 12px; font-size: 16px; }
+.muted { opacity: 0.75; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.btn {
+  border: 1px solid rgba(127,127,127,0.35);
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn:hover { border-color: rgba(127,127,127,0.7); }
+.toggle { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.card {
+  border: 1px solid rgba(127,127,127,0.25);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.tableWrap { overflow: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 960px; }
+th, td { border-bottom: 1px solid rgba(127,127,127,0.2); padding: 8px; vertical-align: top; }
+th { text-align: left; font-weight: 600; }
+input[type="text"], input[type="number"], select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(127,127,127,0.35);
+  background: transparent;
+}
+input.bad { border-color: #d33; }
+small.error { color: #d33; display: block; margin-top: 4px; }
+.help { margin-top: 10px; }
+.helpBody { padding-top: 10px; }
+code { padding: 1px 4px; border-radius: 6px; border: 1px solid rgba(127,127,127,0.25); }
+.log { margin-top: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+.logItem { padding: 8px; border: 1px solid rgba(127,127,127,0.2); border-radius: 10px; margin-bottom: 8px; }
+.logItem .k { opacity: 0.8; }
+.actions { display: flex; gap: 6px; }
+.iconBtn { border: 1px solid rgba(127,127,127,0.35); background: transparent; border-radius: 8px; padding: 6px 8px; cursor: pointer; }
+.iconBtn:hover { border-color: rgba(127,127,127,0.7); }
+.iconBtn:disabled { opacity: 0.55; cursor: default; }

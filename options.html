@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MimeGoblin — Options</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="wrap">
+    <h1>MimeGoblin</h1>
+    <p class="muted">
+      Routes downloads into subfolders based on regex rules. Paths are always relative to your Downloads directory.
+    </p>
+    <div class="row">
+      <label class="toggle">
+        <input type="checkbox" id="globalEnabled" />
+        <span>Enable routing</span>
+      </label>
+      <div class="spacer"></div>
+      <button id="addRule" class="btn">Add rule</button>
+      <button id="exportRules" class="btn">Export</button>
+      <button id="importRules" class="btn">Import</button>
+      <input type="file" id="importFile" accept="application/json" hidden />
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Rules (first match wins)</h2>
+
+      <div class="tableWrap">
+        <table id="rulesTable">
+          <thead>
+            <tr>
+              <th>On</th>
+              <th>Regex</th>
+              <th>Flags</th>
+              <th>Folder template</th>
+              <th>Rename template (optional)</th>
+              <th>Conflict</th>
+              <th>On?</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+      </div>
+
+      <details class="help">
+        <summary>Template tokens</summary>
+        <div class="helpBody">
+          <p>
+            You can use tokens like <code>${filename}</code>, <code>${ext}</code>, <code>${host}</code>,
+            <code>${date}</code>, <code>${yyyy}</code>, <code>${mm}</code>, <code>${dd}</code>.
+          </p>
+          <p>
+            For capture groups, use <code>${filename:1}</code> (or <code>${url:2}</code>, etc.) where the prefix matches
+            the "On" field for that rule.
+          </p>
+          <p class="muted">
+            Folder templates are sanitized: no absolute paths, no <code>..</code>, no leading slashes.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Recent routing (local)</h2>
+      <p class="muted">This is stored locally (not synced) and limited to 50 entries by default.</p>
+      <div class="row">
+        <button id="clearLog" class="btn">Clear log</button>
+        <div class="spacer"></div>
+        <label class="row">
+          <span class="muted">Max entries</span>
+          <input id="maxLogEntries" type="number" min="0" max="200" step="1" style="width:6rem" />
+        </label>
+      </div>
+      <div id="log" class="log"></div>
+    </section>
+  </main>
+
+  <footer class="wrap muted">
+    <p>
+      Note: Chrome only allows extensions to suggest paths <em>relative</em> to your configured Downloads directory.
+    </p>
+  </footer>
+
+  <script src="options.js"></script>
+</body>
+</html>

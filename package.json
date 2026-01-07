@@ -1,0 +1,14 @@
+{
+  "name": "mimegoblin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.js",
+    "test": "node --test",
+    "build": "node scripts/build.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "version": "1.1.3"
+}

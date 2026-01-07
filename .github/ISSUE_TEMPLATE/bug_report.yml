@@ -1,0 +1,32 @@
+name: Bug report
+description: Something is broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the URL/filename and the rule that should have matched.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact clicks/keys, including whether Save As was shown.
+    validations:
+      required: true
+  - type: input
+    id: chrome
+    attributes:
+      label: Chrome/Chromium version
+      placeholder: "e.g. 121.0.6167.85"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Routing log (optional)
+      description: Options → Routing log → copy/paste a couple of entries.
+    validations:
+      required: false

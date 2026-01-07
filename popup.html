@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MimeGoblin</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main>
+    <div class="row">
+      <div class="title">MimeGoblin</div>
+    </div>
+
+    <label class="toggle">
+      <input id="enabled" type="checkbox" />
+      <span>Enable routing</span>
+    </label>
+
+    <div class="row">
+      <button id="openOptions" type="button">Settings</button>
+    </div>
+
+    <div id="status" class="status" aria-live="polite"></div>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
