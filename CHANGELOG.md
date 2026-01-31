@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+- Options: add support for dragging rules to change ordering
+- Add raw mime info to log entries
+
 ## 1.1.4
 - Options: fix rule 'On' selector resetting after import/add/re-render.
 - Save page (routed): no longer forces a Save As dialog.

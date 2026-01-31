@@ -15,6 +15,7 @@ const CONFLICT_ACTION = ["uniquify", "overwrite", "prompt"];
 // operate on the current list, not a stale array captured at page load.
 let currentRules = [];
 let currentSettings = { enabled: true, maxLogEntries: 50 };
+let dragSourceId = null;
 
 function uid() {
   return "r_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -78,6 +79,8 @@ async function setSettings(settings) {
 function ruleRow(rules, rule) {
   const rowIndex = rules.findIndex(r => r.id === rule.id);
 
+  const row = el("tr", { "data-rule-id": rule.id || "" });
+
   const rx = rule.pattern ? compileRegex(rule.pattern, rule.flags || "i") : null;
   const bad = rule.pattern && !rx;
 
@@ -96,6 +99,13 @@ function ruleRow(rules, rule) {
 
   const chkEnabled = el("input", { type: "checkbox" });
   chkEnabled.checked = rule.enabled !== false;
+
+  const dragHandle = el("span", {
+    class: "dragHandle",
+    title: "Drag to reorder",
+    text: "⋮⋮",
+  });
+  dragHandle.setAttribute("draggable", "true");
 
   const upBtn = el("button", { class: "iconBtn", type: "button", text: "Up", title: "Move rule up" });
   const downBtn = el("button", { class: "iconBtn", type: "button", text: "Down", title: "Move rule down" });
@@ -162,9 +172,89 @@ function ruleRow(rules, rule) {
   upBtn.addEventListener("click", () => move(-1));
   downBtn.addEventListener("click", () => move(1));
 
-  const actions = el("div", { class: "actions" }, upBtn, downBtn, delBtn);
+  dragHandle.addEventListener("dragstart", (ev) => {
+    dragSourceId = rule.id;
+    try {
+      ev.dataTransfer.effectAllowed = "move";
+      ev.dataTransfer.setData("text/plain", String(rule.id || ""));
+    } catch {
+      // ignore
+    }
+    row.classList.add("dragging");
+  });
 
-  return el("tr", {},
+  dragHandle.addEventListener("dragend", () => {
+    dragSourceId = null;
+    row.classList.remove("dragging");
+    document.querySelectorAll("#rulesBody tr.dragOver").forEach((n) => n.classList.remove("dragOver"));
+  });
+
+  function setDragOver(on) {
+    if (on) {
+      document.querySelectorAll("#rulesBody tr.dragOver").forEach((n) => n.classList.remove("dragOver"));
+      row.classList.add("dragOver");
+    } else {
+      row.classList.remove("dragOver");
+    }
+  }
+
+  row.addEventListener("dragover", (ev) => {
+    if (!dragSourceId) return;
+    ev.preventDefault();
+    setDragOver(true);
+    try { ev.dataTransfer.dropEffect = "move"; } catch { /* ignore */ }
+  });
+  row.addEventListener("dragenter", (ev) => {
+    if (!dragSourceId) return;
+    ev.preventDefault();
+    setDragOver(true);
+  });
+  row.addEventListener("dragleave", () => setDragOver(false));
+
+  row.addEventListener("drop", async (ev) => {
+    if (!dragSourceId) return;
+    ev.preventDefault();
+
+    const sourceId = (() => {
+      try {
+        return ev.dataTransfer.getData("text/plain") || dragSourceId;
+      } catch {
+        return dragSourceId;
+      }
+    })();
+
+    const targetId = rule.id;
+    dragSourceId = null;
+    setDragOver(false);
+
+    if (!sourceId || !targetId || sourceId === targetId) return;
+
+    // Preserve scroll position.
+    const tableWrap = document.querySelector(".tableWrap");
+    const scrollTop = tableWrap ? tableWrap.scrollTop : 0;
+
+    const from = rules.findIndex(r => r.id === sourceId);
+    const targetIdx = rules.findIndex(r => r.id === targetId);
+    if (from < 0 || targetIdx < 0) return;
+
+    const rect = row.getBoundingClientRect();
+    const after = ev.clientY > rect.top + rect.height / 2;
+
+    let to = targetIdx + (after ? 1 : 0);
+    const [moved] = rules.splice(from, 1);
+    if (from < to) to -= 1;
+    rules.splice(to, 0, moved);
+
+    await setRules(rules);
+    renderRules(rules);
+
+    const tableWrapAfter = document.querySelector(".tableWrap");
+    if (tableWrapAfter) tableWrapAfter.scrollTop = scrollTop;
+  });
+
+  const actions = el("div", { class: "actions" }, dragHandle, upBtn, downBtn, delBtn);
+
+  row.append(
     el("td", {}, selMatch),
     el("td", {}, inpPattern, errNode),
     el("td", {}, inpFlags),
@@ -174,6 +264,7 @@ function ruleRow(rules, rule) {
     el("td", {}, chkEnabled),
     el("td", {}, actions),
   );
+  return row;
 }
 
 function renderRules(rules) {
@@ -194,8 +285,19 @@ function renderLog(log) {
   }
 
   for (const item of log) {
+    const mimeBits = [];
+    if (item.mime) {
+      mimeBits.push(`effective=${item.mime}${item.mimeSource ? ` (${item.mimeSource})` : ""}`);
+    }
+    if (item.mimeRaw) mimeBits.push(`raw=${item.mimeRaw}`);
+    if (item.mimeFromExt) mimeBits.push(`fromExt=${item.mimeFromExt}`);
+    const mimeText = mimeBits.join(" | ");
+
     root.append(el("div", { class: "logItem" },
       el("div", {}, el("span", { class: "k", text: "time: " }), el("span", { text: item.time || "" })),
+      item.host ? el("div", {}, el("span", { class: "k", text: "host: " }), el("span", { text: item.host })) : document.createTextNode(""),
+      item.ext ? el("div", {}, el("span", { class: "k", text: "ext: " }), el("span", { text: item.ext })) : document.createTextNode(""),
+      mimeText ? el("div", {}, el("span", { class: "k", text: "mime: " }), el("span", { text: mimeText })) : document.createTextNode(""),
       item.matchOn ? el("div", {}, el("span", { class: "k", text: "match: " }), el("span", { text: `${item.matchOn} / ${item.pattern}` })) : el("div", {}, el("span", { class: "k", text: "match: " }), el("span", { text: "(none)" })),
       item.target ? el("div", {}, el("span", { class: "k", text: "target: " }), el("span", { text: item.target })) : document.createTextNode(""),
       item.suggested ? el("div", {}, el("span", { class: "k", text: "suggested: " }), el("span", { text: item.suggested })) : document.createTextNode(""),

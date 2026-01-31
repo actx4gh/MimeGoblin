@@ -172,6 +172,8 @@ const referrer = safeDecodeUri(latest.referrer || downloadItem.referrer);
 const filename = latest.filename || downloadItem.filename || "";
 const mimeRaw = latest.mime || downloadItem.mime || "";
 
+const mimeNormalized = normalizeMime(mimeRaw);
+
 
     let urlPathBase = "";
     try {
@@ -182,6 +184,11 @@ const mimeRaw = latest.mime || downloadItem.mime || "";
 
     const baseName = getBaseName(filename) || urlPathBase || "download";
     const ext = getExt(baseName);
+
+    const mimeFromExtGuess = mimeFromExt(ext) || "";
+    const mimeEffective = mimeNormalized || mimeFromExtGuess || "";
+    const mimeSource = mimeNormalized ? "downloads" : (mimeFromExtGuess ? "ext" : "");
+
     const host = getHostFromUrl(finalUrl || url);
 
     const started = downloadItem.startTime ? new Date(downloadItem.startTime) : new Date();
@@ -194,7 +201,11 @@ const mimeRaw = latest.mime || downloadItem.mime || "";
       url,
       finalUrl,
       referrer,
-      mime: normalizeMime(mimeRaw) || mimeFromExt(ext) || "",
+      mime: mimeEffective,
+      mimeRaw,
+      mimeNormalized,
+      mimeFromExt: mimeFromExtGuess,
+      mimeSource,
       date: dt.date,
       yyyy: dt.yyyy,
       mm: dt.mm,
@@ -239,6 +250,9 @@ const mimeRaw = latest.mime || downloadItem.mime || "";
         host: ctx.host,
         ext: ctx.ext,
         mime: ctx.mime,
+        mimeRaw: ctx.mimeRaw,
+        mimeFromExt: ctx.mimeFromExt,
+        mimeSource: ctx.mimeSource,
         ruleId: rule.id || "",
         matchOn,
         pattern,
@@ -252,7 +266,19 @@ const mimeRaw = latest.mime || downloadItem.mime || "";
       return;
     }
 
-    await appendLog({ time: nowIso(), note: "no_match", downloadId: downloadItem.id, host: ctx.host, ext: ctx.ext, mime: ctx.mime, target: ctx.filename, suggested: "" });
+    await appendLog({
+      time: nowIso(),
+      note: "no_match",
+      downloadId: downloadItem.id,
+      host: ctx.host,
+      ext: ctx.ext,
+      mime: ctx.mime,
+      mimeRaw: ctx.mimeRaw,
+      mimeFromExt: ctx.mimeFromExt,
+      mimeSource: ctx.mimeSource,
+      target: ctx.filename,
+      suggested: "",
+    });
     safeSuggest();
   })().catch(() => {
     safeSuggest();
